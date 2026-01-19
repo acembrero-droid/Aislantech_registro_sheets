@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Nueva Contraseña - Aislantech</title>
+    <style>
+        body { font-family: sans-serif; background: #f4f4f4; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; }
+        .card { background: white; padding: 40px; border-radius: 15px; box-shadow: 0 10px 20px rgba(0,0,0,0.1); width: 350px; }
+        h2 { color: #eebc06; text-align: center; }
+        input { width: 100%; padding: 12px; margin: 10px 0; border: 1px solid #ddd; border-radius: 8px; box-sizing: border-box; }
+        button { width: 100%; padding: 12px; background: #eebc06; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; }
+        .msg { font-size: 12px; text-align: center; margin-top: 10px; color: red; }
+    </style>
+</head>
+<body>
+    <div class="card">
+        <h2>Nueva Contraseña</h2>
+        <input type="password" id="p1" placeholder="Nueva contraseña">
+        <input type="password" id="p2" placeholder="Repite la contraseña">
+        <div id="error" class="msg"></div>
+        <button onclick="guardar()">Guardar Cambios</button>
+    </div>
+
+    <script>
+        const API_URL = "TU_URL_DE_APPS_SCRIPT_AQUI"; 
+        const params = new URLSearchParams(window.location.search);
+        const token = params.get('token');
+
+        async function guardar() {
+            const p1 = document.getElementById('p1').value;
+            const p2 = document.getElementById('p2').value;
+            const err = document.getElementById('error');
+
+            if (p1 !== p2) { err.innerText = "Las contraseñas no coinciden."; return; }
+            if (p1.length < 8) { err.innerText = "Mínimo 8 caracteres."; return; }
+
+            err.style.color = "orange";
+            err.innerText = "Guardando...";
+
+            await fetch(API_URL, {
+                method: 'POST',
+                mode: 'no-cors',
+                body: JSON.stringify({ action: "updatePass", token: token, newPass: p1 })
+            });
+
+            alert("Contraseña actualizada con éxito.");
+            window.location.href = "index.html";
+        }
+    </script>
+</body>
+</html>
