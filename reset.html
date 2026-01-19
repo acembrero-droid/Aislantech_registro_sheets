@@ -1,40 +1,72 @@
 <!DOCTYPE html>
-<html>
+<html lang="es">
 <head>
-    <title>Nueva Contraseña - Aislantech</title>
+    <meta charset="UTF-8">
+    <title>Nueva Contraseña - AISLANTECH</title>
     <style>
-        body { font-family: sans-serif; display: flex; justify-content: center; align-items: center; height: 100vh; background: #f4f4f4; }
-        .card { background: white; padding: 30px; border-radius: 10px; box-shadow: 0 5px 15px rgba(0,0,0,0.1); width: 300px; }
-        input { width: 100%; padding: 10px; margin: 10px 0; border: 1px solid #ddd; border-radius: 5px; box-sizing: border-box; }
-        button { width: 100%; padding: 10px; background: #eebc06; border: none; font-weight: bold; cursor: pointer; }
+        :root { --amarillo: #eebc06; --fondo: #f4f4f4; --blanco: #ffffff; }
+        body { font-family: 'Segoe UI', sans-serif; background: var(--fondo); display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; }
+        .card { background: var(--blanco); padding: 40px; border-radius: 15px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); width: 350px; box-sizing: border-box; }
+        h2 { color: var(--amarillo); text-align: center; margin-bottom: 20px; }
+        
+        .input-group { position: relative; margin-bottom: 15px; }
+        input { width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 8px; box-sizing: border-box; outline: none; }
+        
+        .toggle-pass { 
+            position: absolute; right: 12px; top: 50%; transform: translateY(-50%); 
+            cursor: pointer; color: #aaa; user-select: none;
+        }
+
+        button { width: 100%; padding: 12px; background: var(--amarillo); border: none; border-radius: 8px; font-weight: bold; cursor: pointer; }
+        .error { color: #d93025; font-size: 12px; text-align: center; margin-top: 10px; }
     </style>
 </head>
 <body>
-    <div class="card">
-        <h2 style="color:#eebc06">Nueva Contraseña</h2>
-        <input type="password" id="p1" placeholder="Nueva contraseña">
-        <input type="password" id="p2" placeholder="Repite contraseña">
-        <button onclick="actualizar()">Guardar Nueva Clave</button>
+
+<div class="card">
+    <h2>Nueva Contraseña</h2>
+    <div class="input-group">
+        <input type="password" id="pass1" placeholder="Nueva contraseña">
+        <span class="toggle-pass" onclick="toggle('pass1')">👁️</span>
     </div>
+    <div class="input-group">
+        <input type="password" id="pass2" placeholder="Repite contraseña">
+        <span class="toggle-pass" onclick="toggle('pass2')">👁️</span>
+    </div>
+    <div id="msg" class="error"></div>
+    <button onclick="guardar()">Guardar Nueva Clave</button>
+</div>
 
-    <script>
-        const API_URL = "TU_URL_DE_APPS_SCRIPT_AQUI";
-        const token = new URLSearchParams(window.location.search).get('token');
+<script>
+    // PEGA AQUÍ TU URL /EXEC
+    const API_URL = "TU_URL_DE_APPS_SCRIPT_AQUI"; 
+    const token = new URLSearchParams(window.location.search).get('token');
 
-        async function actualizar() {
-            const n1 = document.getElementById('p1').value;
-            const n2 = document.getElementById('p2').value;
-            if (n1 !== n2 || n1.length < 8) return alert("Las claves no coinciden o son cortas");
+    function toggle(id) {
+        const input = document.getElementById(id);
+        input.type = input.type === 'password' ? 'text' : 'password';
+    }
 
-            await fetch(API_URL, {
-                method: 'POST',
-                mode: 'no-cors',
-                body: JSON.stringify({ action: "updatePass", token: token, newPass: n1 })
-            });
+    async function guardar() {
+        const p1 = document.getElementById('pass1').value;
+        const p2 = document.getElementById('pass2').value;
+        const msg = document.getElementById('msg');
 
-            alert("¡Contraseña cambiada! Ahora puedes iniciar sesión.");
-            window.location.href = "index.html";
-        }
-    </script>
+        if (p1 !== p2) { msg.innerText = "Las contraseñas no coinciden."; return; }
+        if (p1.length < 8) { msg.innerText = "Mínimo 8 caracteres."; return; }
+
+        msg.style.color = "orange";
+        msg.innerText = "Actualizando...";
+
+        await fetch(API_URL, {
+            method: 'POST',
+            mode: 'no-cors',
+            body: JSON.stringify({ action: "updatePass", token: token, newPass: p1 })
+        });
+
+        alert("¡Éxito! Tu contraseña ha sido cambiada.");
+        window.location.href = "index.html";
+    }
+</script>
 </body>
 </html>
