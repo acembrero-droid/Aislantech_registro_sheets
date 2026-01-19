@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Aislantech Acceso</title>
+    <style>
+        body { font-family: sans-serif; background: #1a1a1a; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; }
+        .card { background: white; padding: 40px; border-radius: 12px; width: 350px; text-align: center; }
+        h1 { color: #eebc06; margin-bottom: 25px; }
+        input { width: 100%; padding: 12px; margin: 10px 0; border: 1px solid #ddd; border-radius: 6px; box-sizing: border-box; }
+        button { width: 100%; padding: 12px; background: #eebc06; border: none; border-radius: 6px; font-weight: bold; cursor: pointer; }
+        .mensaje { margin-top: 15px; font-size: 14px; }
+    </style>
+</head>
+<body>
+    <div class="card">
+        <h1>AISLANTECH</h1>
+        <div id="form">
+            <input type="text" id="user" placeholder="Nombre de usuario">
+            <input type="email" id="email" placeholder="Email">
+            <input type="password" id="pass" placeholder="Contraseña">
+            <button onclick="registrar()">Registrar en la Base de Datos</button>
+            <div id="status" class="mensaje"></div>
+        </div>
+    </div>
+
+    <script>
+        // PEGA AQUÍ TU URL DE GOOGLE APPS SCRIPT
+        const WEB_APP_URL = "TU_URL_DE_SHEETS_AQUÍ";
+
+        async function registrar() {
+            const status = document.getElementById('status');
+            status.innerText = "Conectando con la base de datos...";
+
+            const datos = {
+                action: "signup",
+                username: document.getElementById('user').value,
+                email: document.getElementById('email').value,
+                password: document.getElementById('pass').value
+            };
+
+            try {
+                // Usamos el modo 'no-cors' para evitar bloqueos de seguridad del navegador
+                await fetch(WEB_APP_URL, {
+                    method: 'POST',
+                    mode: 'no-cors', 
+                    body: JSON.stringify(datos),
+                    headers: { 'Content-Type': 'application/json' }
+                });
+                
+                status.style.color = "green";
+                status.innerText = "¡Registro enviado! Revisa tu Excel y tu Email.";
+            } catch (error) {
+                status.style.color = "red";
+                status.innerText = "Error de conexión.";
+                console.log(error);
+            }
+        }
+    </script>
+</body>
+</html>
