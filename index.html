@@ -3,42 +3,33 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AISLANTECH - Acceso Técnico</title>
+    <title>AISLANTECH - Acceso</title>
     <style>
-        :root { --amarillo: #eebc06; --fondo: #f4f4f4; --blanco: #ffffff; --texto: #333; }
-        body { font-family: 'Segoe UI', system-ui, sans-serif; background: var(--fondo); display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; color: var(--texto); }
+        :root { --amarillo: #eebc06; --fondo: #f4f4f4; --blanco: #ffffff; }
+        body { font-family: 'Segoe UI', sans-serif; background: var(--fondo); display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; }
+        .card { background: var(--blanco); padding: 40px; border-radius: 15px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); width: 380px; box-sizing: border-box; }
+        h1 { color: var(--amarillo); text-align: center; margin-bottom: 25px; }
         
-        .card { background: var(--blanco); padding: 40px; border-radius: 15px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); width: 100%; max-width: 400px; box-sizing: border-box; }
-        h1 { color: var(--amarillo); text-align: center; margin-bottom: 25px; font-size: 28px; letter-spacing: -1px; }
-        
-        /* Pestañas */
         .tabs { display: flex; margin-bottom: 25px; border-bottom: 2px solid #eee; }
-        .tab { flex: 1; padding: 12px; text-align: center; cursor: pointer; font-weight: bold; color: #aaa; transition: 0.3s; }
+        .tab { flex: 1; padding: 12px; text-align: center; cursor: pointer; font-weight: bold; color: #aaa; }
         .tab.active { color: var(--amarillo); border-bottom: 2px solid var(--amarillo); }
 
-        /* Inputs */
-        .input-group { margin-bottom: 15px; }
-        input { width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 8px; box-sizing: border-box; outline: none; font-size: 15px; transition: border-color 0.3s; }
-        input:focus { border-color: var(--amarillo); }
+        .input-group { position: relative; margin-bottom: 15px; }
+        input { width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 8px; box-sizing: border-box; outline: none; font-size: 15px; }
         
-        /* Botones */
-        button { width: 100%; padding: 14px; background: var(--amarillo); border: none; border-radius: 8px; font-weight: bold; cursor: pointer; font-size: 16px; transition: 0.2s; margin-top: 10px; }
-        button:hover { background: #d4a705; }
-        button:disabled { background: #ccc; cursor: not-allowed; }
-        
-        /* Requisitos Contraseña */
-        .req-box { margin: 10px 0; display: none; }
-        .req { font-size: 12px; color: #999; display: flex; align-items: center; margin: 4px 0; }
-        .req.valid { color: #28a745; font-weight: bold; }
-        .req::before { content: "○"; margin-right: 8px; }
-        .req.valid::before { content: "●"; }
-        
-        /* Enlaces */
-        .links { text-align: center; margin-top: 20px; }
-        .link { font-size: 13px; color: #666; cursor: pointer; display: block; margin-top: 10px; text-decoration: none; }
-        .link:hover { color: var(--amarillo); }
+        /* Icono de Ver Contraseña */
+        .toggle-pass { 
+            position: absolute; right: 12px; top: 50%; transform: translateY(-50%); 
+            cursor: pointer; color: #aaa; font-size: 14px; user-select: none;
+        }
 
-        .loader { display: none; text-align: center; color: var(--amarillo); margin-top: 15px; font-weight: bold; }
+        button { width: 100%; padding: 14px; background: var(--amarillo); border: none; border-radius: 8px; font-weight: bold; cursor: pointer; margin-top: 10px; }
+        button:disabled { background: #ccc; }
+        
+        .req-box { margin: 10px 0; display: none; font-size: 12px; color: #999; }
+        .valid { color: #28a745; font-weight: bold; }
+        .links { text-align: center; margin-top: 20px; font-size: 13px; color: #666; }
+        .link { cursor: pointer; display: block; margin-top: 10px; }
     </style>
 </head>
 <body>
@@ -62,16 +53,16 @@
 
         <div id="group-pass" class="input-group">
             <input type="password" id="password" placeholder="Contraseña" oninput="validarPass()">
+            <span class="toggle-pass" onclick="togglePassword('password')">👁️</span>
         </div>
         
         <div id="req-box" class="req-box">
-            <div id="r-len" class="req">8+ caracteres</div>
-            <div id="r-num" class="req">Un número</div>
-            <div id="r-cap" class="req">Una mayúscula</div>
+            <div id="r-len">○ 8+ caracteres</div>
+            <div id="r-num">○ Un número</div>
+            <div id="r-cap">○ Una mayúscula</div>
         </div>
 
         <button id="btn-submit" onclick="enviar()">Entrar</button>
-        <div id="loading" class="loader">Procesando solicitud...</div>
 
         <div class="links">
             <span id="link-recover" class="link" onclick="setMode('recover')">¿Olvidaste tu contraseña?</span>
@@ -81,107 +72,58 @@
 </div>
 
 <script>
-    // ==========================================
-    // CONFIGURACIÓN: CAMBIA ESTO POR TU URL /EXEC
     const API_URL = "https://script.google.com/macros/s/AKfycbwOT8K89aveRsOaIo7NEcSxkP_xDYzEQpaEnf07Jih0BrO8_YA5D0jdy4lrtfKpgcSE/exec"; 
-    // ==========================================
-
     let modo = 'login';
 
     function setMode(m) {
         modo = m;
-        const isLogin = modo === 'login';
-        const isSignup = modo === 'signup';
-        const isRecover = modo === 'recover';
+        document.getElementById('tabs-container').style.display = m === 'recover' ? 'none' : 'flex';
+        document.getElementById('tab-login').className = m === 'login' ? 'tab active' : 'tab';
+        document.getElementById('tab-signup').className = m === 'signup' ? 'tab active' : 'tab';
+        document.getElementById('group-user').style.display = m === 'signup' ? 'block' : 'none';
+        document.getElementById('group-pass').style.display = m === 'recover' ? 'none' : 'block';
+        document.getElementById('req-box').style.display = m === 'signup' ? 'block' : 'none';
+        document.getElementById('btn-submit').innerText = m === 'login' ? 'Entrar' : (m === 'signup' ? 'Crear Cuenta' : 'Enviar Enlace');
+        document.getElementById('link-recover').style.display = m === 'login' ? 'block' : 'none';
+        document.getElementById('link-back').style.display = m === 'recover' ? 'block' : 'none';
+    }
 
-        // UI de Pestañas
-        document.getElementById('tabs-container').style.display = isRecover ? 'none' : 'flex';
-        document.getElementById('tab-login').classList.toggle('active', isLogin);
-        document.getElementById('tab-signup').classList.toggle('active', isSignup);
-        
-        // Campos
-        document.getElementById('group-user').style.display = isSignup ? 'block' : 'none';
-        document.getElementById('group-pass').style.display = isRecover ? 'none' : 'block';
-        document.getElementById('req-box').style.display = isSignup ? 'block' : 'none';
-        
-        // Botones y Enlaces
-        document.getElementById('btn-submit').innerText = isLogin ? 'Entrar' : (isSignup ? 'Crear Cuenta' : 'Enviar Enlace de Recuperación');
-        document.getElementById('link-recover').style.display = isLogin ? 'block' : 'none';
-        document.getElementById('link-back').style.display = isRecover ? 'block' : 'none';
-        
-        validarPass();
+    function togglePassword(id) {
+        const input = document.getElementById(id);
+        input.type = input.type === 'password' ? 'text' : 'password';
     }
 
     function validarPass() {
-        if (modo !== 'signup') {
-            document.getElementById('btn-submit').disabled = false;
-            return;
-        }
+        if (modo !== 'signup') { document.getElementById('btn-submit').disabled = false; return; }
         const p = document.getElementById('password').value;
         const c1 = p.length >= 8, c2 = /[0-9]/.test(p), c3 = /[A-Z]/.test(p);
-        
-        document.getElementById('r-len').className = c1 ? 'req valid' : 'req';
-        document.getElementById('r-num').className = c2 ? 'req valid' : 'req';
-        document.getElementById('r-cap').className = c3 ? 'req valid' : 'req';
-        
+        document.getElementById('r-len').className = c1 ? 'valid' : '';
+        document.getElementById('r-num').className = c2 ? 'valid' : '';
+        document.getElementById('r-cap').className = c3 ? 'valid' : '';
         document.getElementById('btn-submit').disabled = !(c1 && c2 && c3);
     }
 
     async function enviar() {
-        const email = document.getElementById('email').value;
-        const pass = document.getElementById('password').value;
-        const user = document.getElementById('username').value;
-
-        if (!email || (modo !== 'recover' && !pass) || (modo === 'signup' && !user)) {
-            alert("Por favor, completa los campos requeridos.");
-            return;
-        }
-
-        const btn = document.getElementById('btn-submit');
-        const loader = document.getElementById('loading');
-        btn.style.display = 'none';
-        loader.style.display = 'block';
-
-        const datos = {
+        const payload = {
             action: modo,
-            email: email,
-            password: pass,
-            username: user || "Usuario"
+            email: document.getElementById('email').value,
+            password: document.getElementById('password').value,
+            username: document.getElementById('username').value || "Usuario"
         };
 
-        try {
-            // Envío a Google Sheets (no-cors para evitar errores de red)
-            await fetch(API_URL, {
-                method: 'POST',
-                mode: 'no-cors',
-                body: JSON.stringify(datos)
-            });
+        // UI Feedback
+        document.getElementById('btn-submit').innerText = "Procesando...";
+        document.getElementById('btn-submit').disabled = true;
 
-            // Respuesta visual según el modo
-            setTimeout(() => {
-                loader.style.display = 'none';
-                btn.style.display = 'block';
+        await fetch(API_URL, { method: 'POST', mode: 'no-cors', body: JSON.stringify(payload) });
 
-                if (modo === 'signup') {
-                    alert("✓ Solicitud enviada. Si el correo es nuevo, recibirás un link de activación. Si ya existía, recibirás un aviso por email.");
-                    location.reload();
-                } else if (modo === 'recover') {
-                    alert("✓ Si el correo está registrado, recibirás un link para cambiar tu contraseña en unos minutos.");
-                    setMode('login');
-                } else {
-                    // LOGIN: Redirigir al Dashboard pasando el nombre de usuario
-                    const nombreUsuario = user || email.split('@')[0];
-                    window.location.href = "dashboard.html?user=" + encodeURIComponent(nombreUsuario);
-                }
-            }, 1000);
-
-        } catch (e) {
-            alert("Error de conexión con el servidor.");
-            btn.style.display = 'block';
-            loader.style.display = 'none';
-        }
+        setTimeout(() => {
+            if (modo === 'recover') alert("Enlace enviado si el correo existe.");
+            else if (modo === 'signup') alert("Registro enviado. Revisa tu email.");
+            else window.location.href = "dashboard.html?user=" + encodeURIComponent(payload.email);
+            setMode('login');
+        }, 1000);
     }
 </script>
-
 </body>
 </html>
