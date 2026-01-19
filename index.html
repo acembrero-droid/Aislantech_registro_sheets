@@ -3,25 +3,26 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AISLANTECH - Acceso</title>
+    <title>AISLANTECH - Acceso Profesional</title>
     <style>
         :root { --amarillo: #eebc06; --fondo: #f4f4f4; --blanco: #ffffff; --texto: #333; }
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: var(--fondo); display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; }
+        body { font-family: 'Segoe UI', system-ui, -apple-system, sans-serif; background: var(--fondo); display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; }
         
-        .card { background: var(--blanco); padding: 40px; border-radius: 15px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); width: 100%; max-width: 380px; box-sizing: border-box; }
-        h1 { color: var(--amarillo); text-align: center; margin-bottom: 25px; font-size: 28px; }
+        .card { background: var(--blanco); padding: 40px; border-radius: 15px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); width: 100%; max-width: 400px; box-sizing: border-box; position: relative; }
+        h1 { color: var(--amarillo); text-align: center; margin-bottom: 25px; font-size: 28px; letter-spacing: -1px; }
         
         /* Pestañas */
         .tabs { display: flex; margin-bottom: 25px; border-bottom: 2px solid #eee; }
         .tab { flex: 1; padding: 12px; text-align: center; cursor: pointer; font-weight: bold; color: #aaa; transition: 0.3s; }
         .tab.active { color: var(--amarillo); border-bottom: 2px solid var(--amarillo); }
 
-        /* Formulario */
+        /* Inputs */
         .input-group { margin-bottom: 15px; }
-        input { width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 8px; box-sizing: border-box; outline: none; font-size: 15px; }
+        input { width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 8px; box-sizing: border-box; outline: none; font-size: 15px; transition: border-color 0.3s; }
         input:focus { border-color: var(--amarillo); }
         
-        button { width: 100%; padding: 14px; background: var(--amarillo); border: none; border-radius: 8px; font-weight: bold; cursor: pointer; font-size: 16px; transition: 0.2s; }
+        /* Botones */
+        button { width: 100%; padding: 14px; background: var(--amarillo); border: none; border-radius: 8px; font-weight: bold; cursor: pointer; font-size: 16px; transition: 0.2s; margin-top: 10px; }
         button:hover { background: #d4a705; }
         button:disabled { background: #ccc; cursor: not-allowed; }
         
@@ -32,6 +33,11 @@
         .req::before { content: "○"; margin-right: 8px; }
         .req.valid::before { content: "●"; }
         
+        /* Enlaces secundarios */
+        .links-container { text-align: center; margin-top: 20px; }
+        .link { font-size: 13px; color: #666; cursor: pointer; text-decoration: none; display: block; margin-top: 10px; }
+        .link:hover { color: var(--amarillo); text-decoration: underline; }
+
         .loader { display: none; text-align: center; color: var(--amarillo); margin-top: 15px; font-weight: bold; }
     </style>
 </head>
@@ -40,13 +46,13 @@
 <div class="card">
     <h1>AISLANTECH</h1>
     
-    <div class="tabs">
-        <div id="tab-login" class="tab active" onclick="cambiarModo('login')">Entrar</div>
-        <div id="tab-signup" class="tab" onclick="cambiarModo('signup')">Registrarse</div>
+    <div id="tabs-interface" class="tabs">
+        <div id="tab-login" class="tab active" onclick="setMode('login')">Entrar</div>
+        <div id="tab-signup" class="tab" onclick="setMode('signup')">Registrarse</div>
     </div>
 
     <div id="form-content">
-        <div id="field-user" class="input-group" style="display:none">
+        <div id="group-user" class="input-group" style="display:none">
             <input type="text" id="username" placeholder="Nombre completo">
         </div>
 
@@ -54,45 +60,63 @@
             <input type="email" id="email" placeholder="Email corporativo">
         </div>
 
-        <div class="input-group">
-            <input type="password" id="password" placeholder="Contraseña" oninput="validar()">
+        <div id="group-pass" class="input-group">
+            <input type="password" id="password" placeholder="Contraseña" oninput="validarPass()">
         </div>
         
-        <div id="pass-reqs" class="req-box">
-            <div id="r-len" class="req">8+ caracteres</div>
-            <div id="r-num" class="req">Un número</div>
-            <div id="r-cap" class="req">Una mayúscula</div>
+        <div id="req-visuals" class="req-box">
+            <div id="r-len" class="req">Mínimo 8 caracteres</div>
+            <div id="r-num" class="req">Al menos un número</div>
+            <div id="r-cap" class="req">Al menos una mayúscula</div>
         </div>
 
-        <button id="btn-main" onclick="enviarDatos()">Entrar</button>
-        <div id="loading" class="loader">Procesando...</div>
+        <button id="btn-submit" onclick="enviarFormulario()">Entrar</button>
+        <div id="loading" class="loader">Procesando solicitud...</div>
+
+        <div class="links-container">
+            <span id="link-recover" class="link" onclick="setMode('recover')">¿Olvidaste tu contraseña?</span>
+            <span id="link-back" class="link" style="display:none" onclick="setMode('login')">Volver al inicio de sesión</span>
+        </div>
     </div>
 </div>
 
 <script>
     // ==========================================
     // CONFIGURACIÓN: PEGA TU URL DE APPS SCRIPT
-    const API_URL = "https://script.google.com/macros/s/AKfycbxGK9fXOhcxQAaMVHGLMFsEQNLbyyHEVZWVcDbLvET3BUeDE9DhQiZ4NTtBREdt0-ho/exec"; 
+    const API_URL = "https://script.google.com/macros/s/AKfycbwOT8K89aveRsOaIo7NEcSxkP_xDYzEQpaEnf07Jih0BrO8_YA5D0jdy4lrtfKpgcSE/exec"; 
     // ==========================================
 
     let modo = 'login';
 
-    function cambiarModo(m) {
+    function setMode(m) {
         modo = m;
-        document.getElementById('tab-login').classList.toggle('active', modo === 'login');
-        document.getElementById('tab-signup').classList.toggle('active', modo === 'signup');
         
+        // Reset de UI
+        const isLogin = modo === 'login';
         const isSignup = modo === 'signup';
-        document.getElementById('field-user').style.display = isSignup ? 'block' : 'none';
-        document.getElementById('pass-reqs').style.display = isSignup ? 'block' : 'none';
-        document.getElementById('btn-main').innerText = isSignup ? 'Crear Cuenta' : 'Entrar';
+        const isRecover = modo === 'recover';
+
+        // Gestión de pestañas
+        document.getElementById('tabs-interface').style.display = isRecover ? 'none' : 'flex';
+        document.getElementById('tab-login').classList.toggle('active', isLogin);
+        document.getElementById('tab-signup').classList.toggle('active', isSignup);
         
-        validar();
+        // Gestión de campos
+        document.getElementById('group-user').style.display = isSignup ? 'block' : 'none';
+        document.getElementById('group-pass').style.display = isRecover ? 'none' : 'block';
+        document.getElementById('req-visuals').style.display = isSignup ? 'block' : 'none';
+        
+        // Gestión de botones y enlaces
+        document.getElementById('btn-submit').innerText = isLogin ? 'Entrar' : (isSignup ? 'Crear Cuenta' : 'Enviar enlace de recuperación');
+        document.getElementById('link-recover').style.display = isLogin ? 'block' : 'none';
+        document.getElementById('link-back').style.display = isRecover ? 'block' : 'none';
+        
+        validarPass();
     }
 
-    function validar() {
-        if (modo === 'login') {
-            document.getElementById('btn-main').disabled = false;
+    function validarPass() {
+        if (modo !== 'signup') {
+            document.getElementById('btn-submit').disabled = false;
             return;
         }
         const p = document.getElementById('password').value;
@@ -102,20 +126,20 @@
         document.getElementById('r-num').className = c2 ? 'req valid' : 'req';
         document.getElementById('r-cap').className = c3 ? 'req valid' : 'req';
         
-        document.getElementById('btn-main').disabled = !(c1 && c2 && c3);
+        document.getElementById('btn-submit').disabled = !(c1 && c2 && c3);
     }
 
-    async function enviarDatos() {
+    async function enviarFormulario() {
         const email = document.getElementById('email').value;
         const pass = document.getElementById('password').value;
         const user = document.getElementById('username').value;
 
-        if (!email || !pass || (modo === 'signup' && !user)) {
-            alert("Rellena todos los campos");
+        if (!email || (modo !== 'recover' && !pass) || (modo === 'signup' && !user)) {
+            alert("Por favor, rellena los campos necesarios.");
             return;
         }
 
-        document.getElementById('btn-main').style.display = 'none';
+        document.getElementById('btn-submit').style.display = 'none';
         document.getElementById('loading').style.display = 'block';
 
         const payload = {
@@ -126,28 +150,34 @@
         };
 
         try {
-            // Envío a Google Sheets
+            // Envío a Google Sheets (usamos no-cors para evitar bloqueos del navegador)
             await fetch(API_URL, {
                 method: 'POST',
                 mode: 'no-cors',
                 body: JSON.stringify(payload)
             });
 
-            // Simulamos un tiempo de respuesta para mejor UX
+            // Simulamos pausa para feedback visual
             setTimeout(() => {
+                document.getElementById('btn-submit').style.display = 'block';
+                document.getElementById('loading').style.display = 'none';
+
                 if (modo === 'signup') {
-                    alert("✓ Registro enviado. Revisa tu email para verificar la cuenta.");
+                    alert("✓ Registro enviado. Si el correo no existe previamente, recibirás un enlace de activación de info@aislantech.es");
                     location.reload();
+                } else if (modo === 'recover') {
+                    alert("✓ Si el correo está registrado, recibirás un enlace para cambiar tu contraseña en unos minutos.");
+                    setMode('login');
                 } else {
-                    // LOGIN: Redirigir al Dashboard pasando el nombre en la URL
-                    const nombreParaURL = encodeURIComponent(user || email.split('@')[0]);
-                    window.location.href = "dashboard.html?user=" + nombreParaURL;
+                    // LOGIN: Redirigir al Dashboard (el sistema de validación real ocurre en el backend)
+                    const nombreUsuario = user || email.split('@')[0];
+                    window.location.href = "dashboard.html?user=" + encodeURIComponent(nombreUsuario);
                 }
             }, 1000);
 
         } catch (e) {
-            alert("Error al conectar con el servidor");
-            document.getElementById('btn-main').style.display = 'block';
+            alert("Error de conexión con el servidor técnico.");
+            document.getElementById('btn-submit').style.display = 'block';
             document.getElementById('loading').style.display = 'none';
         }
     }
