@@ -3,12 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AISLANTECH - Acceso Profesional</title>
+    <title>AISLANTECH - Acceso Técnico</title>
     <style>
         :root { --amarillo: #eebc06; --fondo: #f4f4f4; --blanco: #ffffff; --texto: #333; }
-        body { font-family: 'Segoe UI', system-ui, -apple-system, sans-serif; background: var(--fondo); display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; }
+        body { font-family: 'Segoe UI', system-ui, sans-serif; background: var(--fondo); display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; color: var(--texto); }
         
-        .card { background: var(--blanco); padding: 40px; border-radius: 15px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); width: 100%; max-width: 400px; box-sizing: border-box; position: relative; }
+        .card { background: var(--blanco); padding: 40px; border-radius: 15px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); width: 100%; max-width: 400px; box-sizing: border-box; }
         h1 { color: var(--amarillo); text-align: center; margin-bottom: 25px; font-size: 28px; letter-spacing: -1px; }
         
         /* Pestañas */
@@ -33,10 +33,10 @@
         .req::before { content: "○"; margin-right: 8px; }
         .req.valid::before { content: "●"; }
         
-        /* Enlaces secundarios */
-        .links-container { text-align: center; margin-top: 20px; }
-        .link { font-size: 13px; color: #666; cursor: pointer; text-decoration: none; display: block; margin-top: 10px; }
-        .link:hover { color: var(--amarillo); text-decoration: underline; }
+        /* Enlaces */
+        .links { text-align: center; margin-top: 20px; }
+        .link { font-size: 13px; color: #666; cursor: pointer; display: block; margin-top: 10px; text-decoration: none; }
+        .link:hover { color: var(--amarillo); }
 
         .loader { display: none; text-align: center; color: var(--amarillo); margin-top: 15px; font-weight: bold; }
     </style>
@@ -46,7 +46,7 @@
 <div class="card">
     <h1>AISLANTECH</h1>
     
-    <div id="tabs-interface" class="tabs">
+    <div id="tabs-container" class="tabs">
         <div id="tab-login" class="tab active" onclick="setMode('login')">Entrar</div>
         <div id="tab-signup" class="tab" onclick="setMode('signup')">Registrarse</div>
     </div>
@@ -64,25 +64,25 @@
             <input type="password" id="password" placeholder="Contraseña" oninput="validarPass()">
         </div>
         
-        <div id="req-visuals" class="req-box">
-            <div id="r-len" class="req">Mínimo 8 caracteres</div>
-            <div id="r-num" class="req">Al menos un número</div>
-            <div id="r-cap" class="req">Al menos una mayúscula</div>
+        <div id="req-box" class="req-box">
+            <div id="r-len" class="req">8+ caracteres</div>
+            <div id="r-num" class="req">Un número</div>
+            <div id="r-cap" class="req">Una mayúscula</div>
         </div>
 
-        <button id="btn-submit" onclick="enviarFormulario()">Entrar</button>
+        <button id="btn-submit" onclick="enviar()">Entrar</button>
         <div id="loading" class="loader">Procesando solicitud...</div>
 
-        <div class="links-container">
+        <div class="links">
             <span id="link-recover" class="link" onclick="setMode('recover')">¿Olvidaste tu contraseña?</span>
-            <span id="link-back" class="link" style="display:none" onclick="setMode('login')">Volver al inicio de sesión</span>
+            <span id="link-back" class="link" style="display:none" onclick="setMode('login')">Volver al inicio</span>
         </div>
     </div>
 </div>
 
 <script>
     // ==========================================
-    // CONFIGURACIÓN: PEGA TU URL DE APPS SCRIPT
+    // CONFIGURACIÓN: CAMBIA ESTO POR TU URL /EXEC
     const API_URL = "https://script.google.com/macros/s/AKfycbwOT8K89aveRsOaIo7NEcSxkP_xDYzEQpaEnf07Jih0BrO8_YA5D0jdy4lrtfKpgcSE/exec"; 
     // ==========================================
 
@@ -90,24 +90,22 @@
 
     function setMode(m) {
         modo = m;
-        
-        // Reset de UI
         const isLogin = modo === 'login';
         const isSignup = modo === 'signup';
         const isRecover = modo === 'recover';
 
-        // Gestión de pestañas
-        document.getElementById('tabs-interface').style.display = isRecover ? 'none' : 'flex';
+        // UI de Pestañas
+        document.getElementById('tabs-container').style.display = isRecover ? 'none' : 'flex';
         document.getElementById('tab-login').classList.toggle('active', isLogin);
         document.getElementById('tab-signup').classList.toggle('active', isSignup);
         
-        // Gestión de campos
+        // Campos
         document.getElementById('group-user').style.display = isSignup ? 'block' : 'none';
         document.getElementById('group-pass').style.display = isRecover ? 'none' : 'block';
-        document.getElementById('req-visuals').style.display = isSignup ? 'block' : 'none';
+        document.getElementById('req-box').style.display = isSignup ? 'block' : 'none';
         
-        // Gestión de botones y enlaces
-        document.getElementById('btn-submit').innerText = isLogin ? 'Entrar' : (isSignup ? 'Crear Cuenta' : 'Enviar enlace de recuperación');
+        // Botones y Enlaces
+        document.getElementById('btn-submit').innerText = isLogin ? 'Entrar' : (isSignup ? 'Crear Cuenta' : 'Enviar Enlace de Recuperación');
         document.getElementById('link-recover').style.display = isLogin ? 'block' : 'none';
         document.getElementById('link-back').style.display = isRecover ? 'block' : 'none';
         
@@ -129,20 +127,22 @@
         document.getElementById('btn-submit').disabled = !(c1 && c2 && c3);
     }
 
-    async function enviarFormulario() {
+    async function enviar() {
         const email = document.getElementById('email').value;
         const pass = document.getElementById('password').value;
         const user = document.getElementById('username').value;
 
         if (!email || (modo !== 'recover' && !pass) || (modo === 'signup' && !user)) {
-            alert("Por favor, rellena los campos necesarios.");
+            alert("Por favor, completa los campos requeridos.");
             return;
         }
 
-        document.getElementById('btn-submit').style.display = 'none';
-        document.getElementById('loading').style.display = 'block';
+        const btn = document.getElementById('btn-submit');
+        const loader = document.getElementById('loading');
+        btn.style.display = 'none';
+        loader.style.display = 'block';
 
-        const payload = {
+        const datos = {
             action: modo,
             email: email,
             password: pass,
@@ -150,35 +150,35 @@
         };
 
         try {
-            // Envío a Google Sheets (usamos no-cors para evitar bloqueos del navegador)
+            // Envío a Google Sheets (no-cors para evitar errores de red)
             await fetch(API_URL, {
                 method: 'POST',
                 mode: 'no-cors',
-                body: JSON.stringify(payload)
+                body: JSON.stringify(datos)
             });
 
-            // Simulamos pausa para feedback visual
+            // Respuesta visual según el modo
             setTimeout(() => {
-                document.getElementById('btn-submit').style.display = 'block';
-                document.getElementById('loading').style.display = 'none';
+                loader.style.display = 'none';
+                btn.style.display = 'block';
 
                 if (modo === 'signup') {
-                    alert("✓ Registro enviado. Si el correo no existe previamente, recibirás un enlace de activación de info@aislantech.es");
+                    alert("✓ Solicitud enviada. Si el correo es nuevo, recibirás un link de activación. Si ya existía, recibirás un aviso por email.");
                     location.reload();
                 } else if (modo === 'recover') {
-                    alert("✓ Si el correo está registrado, recibirás un enlace para cambiar tu contraseña en unos minutos.");
+                    alert("✓ Si el correo está registrado, recibirás un link para cambiar tu contraseña en unos minutos.");
                     setMode('login');
                 } else {
-                    // LOGIN: Redirigir al Dashboard (el sistema de validación real ocurre en el backend)
+                    // LOGIN: Redirigir al Dashboard pasando el nombre de usuario
                     const nombreUsuario = user || email.split('@')[0];
                     window.location.href = "dashboard.html?user=" + encodeURIComponent(nombreUsuario);
                 }
             }, 1000);
 
         } catch (e) {
-            alert("Error de conexión con el servidor técnico.");
-            document.getElementById('btn-submit').style.display = 'block';
-            document.getElementById('loading').style.display = 'none';
+            alert("Error de conexión con el servidor.");
+            btn.style.display = 'block';
+            loader.style.display = 'none';
         }
     }
 </script>
