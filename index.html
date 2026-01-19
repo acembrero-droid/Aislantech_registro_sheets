@@ -1,157 +1,35 @@
+
+
+
 <!DOCTYPE html>
 <html lang="es">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AISLANTECH - Sistema de Acceso</title>
+    <title>AISLANTECH - Acceso</title>
     <style>
-        /* Estilos Corporativos Aislantech */
-        :root {
-            --amarillo: #eebc06;
-            --fondo: #f4f4f4;
-            --texto: #333;
-            --blanco: #ffffff;
-        }
+        :root { --amarillo: #eebc06; --fondo: #f4f4f4; --blanco: #ffffff; }
+        body { font-family: 'Segoe UI', sans-serif; background: var(--fondo); display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; }
+        .card { background: var(--blanco); padding: 40px; border-radius: 15px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); width: 380px; }
+        h1 { color: var(--amarillo); text-align: center; margin-bottom: 20px; }
+        
+        /* Pestañas */
+        .tabs { display: flex; margin-bottom: 20px; border-bottom: 2px solid #eee; }
+        .tab { flex: 1; padding: 12px; text-align: center; cursor: pointer; font-weight: bold; color: #aaa; transition: 0.3s; }
+        .tab.active { color: var(--amarillo); border-bottom: 2px solid var(--amarillo); }
 
-        body {
-            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-            background-color: var(--fondo);
-            color: var(--texto);
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-            margin: 0;
-        }
-
-        .card {
-            background: var(--blanco);
-            padding: 40px;
-            border-radius: 15px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
-            width: 100%;
-            max-width: 400px;
-            box-sizing: border-box;
-        }
-
-        h1 {
-            color: var(--amarillo);
-            text-align: center;
-            margin: 0 0 25px 0;
-            font-size: 28px;
-            letter-spacing: -1px;
-        }
-
-        /* Sistema de Pestañas */
-        .tabs {
-            display: flex;
-            margin-bottom: 25px;
-            border-bottom: 2px solid #eee;
-        }
-
-        .tab {
-            flex: 1;
-            padding: 12px;
-            text-align: center;
-            cursor: pointer;
-            font-weight: 600;
-            color: #aaa;
-            transition: 0.3s;
-        }
-
-        .tab.active {
-            color: var(--amarillo);
-            border-bottom: 2px solid var(--amarillo);
-        }
-
-        /* Inputs y Botones */
-        .input-group {
-            margin-bottom: 15px;
-        }
-
-        input {
-            width: 100%;
-            padding: 12px 15px;
-            border: 1px solid #ddd;
-            border-radius: 8px;
-            font-size: 15px;
-            box-sizing: border-box;
-            outline: none;
-            transition: border-color 0.3s;
-        }
-
-        input:focus {
-            border-color: var(--amarillo);
-        }
-
-        button {
-            width: 100%;
-            padding: 14px;
-            background-color: var(--amarillo);
-            color: black;
-            border: none;
-            border-radius: 8px;
-            font-size: 16px;
-            font-weight: bold;
-            cursor: pointer;
-            transition: transform 0.2s, background-color 0.3s;
-            margin-top: 10px;
-        }
-
-        button:hover {
-            background-color: #d4a705;
-        }
-
-        button:disabled {
-            background-color: #ccc;
-            cursor: not-allowed;
-            transform: none;
-        }
-
-        /* Requisitos de Contraseña */
-        .req-list {
-            margin: 10px 0;
-            padding: 0;
-            list-style: none;
-        }
-
-        .req {
-            font-size: 12px;
-            color: #888;
-            display: flex;
-            align-items: center;
-            margin-bottom: 4px;
-        }
-
-        .req.valid {
-            color: #28a745;
-        }
-
-        .req::before {
-            content: "○";
-            margin-right: 8px;
-            font-weight: bold;
-        }
-
-        .req.valid::before {
-            content: "●";
-        }
-
-        .loader {
-            display: none;
-            text-align: center;
-            font-size: 14px;
-            color: var(--amarillo);
-            margin-top: 15px;
-            font-weight: 500;
-        }
-
-        .footer-link {
-            text-align: center;
-            font-size: 13px;
-            margin-top: 20px;
-            color: #666;
-        }
+        input { width: 100%; padding: 12px; margin: 8px 0; border: 1px solid #ddd; border-radius: 8px; box-sizing: border-box; outline: none; }
+        button { width: 100%; padding: 14px; background: var(--amarillo); border: none; border-radius: 8px; font-weight: bold; cursor: pointer; margin-top: 15px; }
+        button:disabled { background: #ccc; cursor: not-allowed; }
+        
+        /* Requisitos visuales */
+        .req-container { margin: 10px 0; display: none; } /* Oculto por defecto */
+        .req { font-size: 12px; color: #999; display: flex; align-items: center; margin: 3px 0; }
+        .req.valid { color: #28a745; font-weight: bold; }
+        .req::before { content: "○"; margin-right: 8px; }
+        .req.valid::before { content: "●"; }
+        
+        .loader { display: none; text-align: center; color: var(--amarillo); margin-top: 10px; }
     </style>
 </head>
 <body>
@@ -160,80 +38,108 @@
     <h1>AISLANTECH</h1>
     
     <div class="tabs">
-        <div id="tab-login" class="tab active" onclick="switchMode('login')">Entrar</div>
-        <div id="tab-signup" class="tab" onclick="switchMode('signup')">Registrarse</div>
+        <div id="tab-login" class="tab active" onclick="cambiarModo('login')">Entrar</div>
+        <div id="tab-signup" class="tab" onclick="cambiarModo('signup')">Registrarse</div>
     </div>
 
-    <div id="form-container">
-        <div id="group-user" class="input-group" style="display: none;">
-            <input type="text" id="username" placeholder="Nombre de usuario completo">
+    <div id="form-body">
+        <input type="text" id="username" placeholder="Nombre completo" style="display:none">
+        <input type="email" id="email" placeholder="Email corporativo">
+        <input type="password" id="password" placeholder="Contraseña" oninput="validar()">
+        
+        <div id="req-box" class="req-container">
+            <div id="r-len" class="req">8+ caracteres</div>
+            <div id="r-num" class="req">Un número</div>
+            <div id="r-cap" class="req">Una mayúscula</div>
         </div>
 
-        <div class="input-group">
-            <input type="email" id="email" placeholder="Email corporativo">
-        </div>
-
-        <div class="input-group">
-            <input type="password" id="password" placeholder="Contraseña" oninput="validatePassword()">
-        </div>
-
-        <div id="pass-requirements" style="display: none;">
-            <ul class="req-list">
-                <li id="req-len" class="req">Mínimo 8 caracteres</li>
-                <li id="req-num" class="req">Al menos un número</li>
-                <li id="req-cap" class="req">Al menos una mayúscula</li>
-            </ul>
-        </div>
-
-        <button id="btn-submit" onclick="handleSubmit()">Entrar</button>
-        <div id="loader" class="loader">Enviando solicitud segura...</div>
-    </div>
-
-    <div class="footer-link" id="footer-msg">
-        Acceso restringido a personal técnico.
+        <button id="btn-main" onclick="enviar()">Entrar</button>
+        <div id="loading" class="loader">Conectando con el servidor...</div>
     </div>
 </div>
 
 <script>
-    // ==========================================================
-    // CONFIGURACIÓN: PEGA TU URL DE GOOGLE APPS SCRIPT AQUÍ
-    // ==========================================================
-    const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxGK9fXOhcxQAaMVHGLMFsEQNLbyyHEVZWVcDbLvET3BUeDE9DhQiZ4NTtBREdt0-ho/exec
-"; 
+    // --- COLOCA TU URL AQUÍ ---
+    const API_URL = "https://script.google.com/macros/s/AKfycbxGK9fXOhcxQAaMVHGLMFsEQNLbyyHEVZWVcDbLvET3BUeDE9DhQiZ4NTtBREdt0-ho/exec"; 
 
-    let currentMode = 'login';
+    let modoActual = 'login';
 
-    function switchMode(mode) {
-        currentMode = mode;
+    function cambiarModo(nuevoModo) {
+        modoActual = nuevoModo;
         
-        // Actualizar pestañas
-        document.getElementById('tab-login').classList.toggle('active', mode === 'login');
-        document.getElementById('tab-signup').classList.toggle('active', mode === 'signup');
+        // Actualizar UI de pestañas
+        document.getElementById('tab-login').classList.toggle('active', modoActual === 'login');
+        document.getElementById('tab-signup').classList.toggle('active', modoActual === 'signup');
 
-        // Mostrar/Ocultar campos
-        document.getElementById('group-user').style.display = mode === 'signup' ? 'block' : 'none';
-        document.getElementById('pass-requirements').style.display = mode === 'signup' ? 'block' : 'none';
+        // Mostrar/Ocultar campos según el modo
+        const displaySignup = modoActual === 'signup' ? 'block' : 'none';
+        document.getElementById('username').style.display = displaySignup;
+        document.getElementById('req-box').style.display = displaySignup;
         
         // Cambiar texto del botón
-        document.getElementById('btn-submit').innerText = mode === 'login' ? 'Entrar' : 'Crear Cuenta';
+        document.getElementById('btn-main').innerText = modoActual === 'login' ? 'Entrar' : 'Crear Cuenta';
         
-        // Resetear validación
-        validatePassword();
+        validar(); // Ejecutar validación inicial
     }
 
-    function validatePassword() {
-        if (currentMode === 'login') {
-            document.getElementById('btn-submit').disabled = false;
+    function validar() {
+        if (modoActual === 'login') {
+            document.getElementById('btn-main').disabled = false;
             return;
         }
 
+        const p = document.getElementById('password').value;
+        const c1 = p.length >= 8;
+        const c2 = /[0-9]/.test(p);
+        const c3 = /[A-Z]/.test(p);
+
+        document.getElementById('r-len').className = c1 ? 'req valid' : 'req';
+        document.getElementById('r-num').className = c2 ? 'req valid' : 'req';
+        document.getElementById('r-cap').className = c3 ? 'req valid' : 'req';
+
+        document.getElementById('btn-main').disabled = !(c1 && c2 && c3);
+    }
+
+    async function enviar() {
+        const email = document.getElementById('email').value;
         const pass = document.getElementById('password').value;
-        const isLen = pass.length >= 8;
-        const isNum = /[0-9]/.test(pass);
-        const isCap = /[A-Z]/.test(pass);
+        const user = document.getElementById('username').value;
 
-        document.getElementById('req-len').className = isLen ? 'req valid' : 'req';
-        document.getElementById('req-num').className = isNum ? 'req valid' : 'req';
-        document.getElementById('req-cap').className = isCap ? 'req valid' : 'req';
+        if (!email || !pass || (modoActual === 'signup' && !user)) {
+            alert("Completa todos los campos");
+            return;
+        }
 
-        document.getElementById('
+        document.getElementById('btn-main').style.display = 'none';
+        document.getElementById('loading').style.display = 'block';
+
+        try {
+            await fetch(API_URL, {
+                method: 'POST',
+                mode: 'no-cors',
+                body: JSON.stringify({
+                    action: modoActual,
+                    email: email,
+                    password: pass,
+                    username: user
+                })
+            });
+
+            document.getElementById('loading').style.display = 'none';
+            document.getElementById('btn-main').style.display = 'block';
+
+            if (modoActual === 'signup') {
+                alert("✓ Solicitud enviada. Revisa tu email para activar la cuenta.");
+            } else {
+                alert("✓ Intento de acceso registrado.");
+            }
+        } catch (e) {
+            alert("Error de conexión");
+            document.getElementById('loading').style.display = 'none';
+            document.getElementById('btn-main').style.display = 'block';
+        }
+    }
+</script>
+
+</body>
+</html>
