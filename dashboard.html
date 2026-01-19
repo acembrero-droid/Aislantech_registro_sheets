@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <style>
+        body { font-family: sans-serif; margin: 0; background: #f4f4f4; }
+        header { 
+            background: white; padding: 15px 30px; display: flex; 
+            justify-content: space-between; align-items: center; box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        .user-name { color: #eebc06; font-weight: bold; border-left: 2px solid #ddd; padding-left: 15px; }
+        .content { padding: 50px; text-align: center; }
+    </style>
+</head>
+<body>
+    <header>
+        <img src="logo-aislantech.png" height="40" alt="AISLANTECH">
+        <div class="user-name" id="display-name">Usuario</div>
+    </header>
+    <div class="content">
+        <h1>Bienvenido al Panel Técnico</h1>
+        <p>Has accedido correctamente al sistema.</p>
+    </div>
+
+    <script>
+        // Capturar el nombre de la URL (ej: dashboard.html?user=Abraham)
+        const params = new URLSearchParams(window.location.search);
+        const nombre = params.get('user');
+        if (nombre) {
+            document.getElementById('display-name').innerText = nombre;
+        }
+    </script>
+</body>
+</html>
