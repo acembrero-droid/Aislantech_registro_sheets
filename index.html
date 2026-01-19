@@ -1,6 +1,3 @@
-
-
-
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -8,28 +5,34 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>AISLANTECH - Acceso</title>
     <style>
-        :root { --amarillo: #eebc06; --fondo: #f4f4f4; --blanco: #ffffff; }
-        body { font-family: 'Segoe UI', sans-serif; background: var(--fondo); display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; }
-        .card { background: var(--blanco); padding: 40px; border-radius: 15px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); width: 380px; }
-        h1 { color: var(--amarillo); text-align: center; margin-bottom: 20px; }
+        :root { --amarillo: #eebc06; --fondo: #f4f4f4; --blanco: #ffffff; --texto: #333; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: var(--fondo); display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; }
+        
+        .card { background: var(--blanco); padding: 40px; border-radius: 15px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); width: 100%; max-width: 380px; box-sizing: border-box; }
+        h1 { color: var(--amarillo); text-align: center; margin-bottom: 25px; font-size: 28px; }
         
         /* Pestañas */
-        .tabs { display: flex; margin-bottom: 20px; border-bottom: 2px solid #eee; }
+        .tabs { display: flex; margin-bottom: 25px; border-bottom: 2px solid #eee; }
         .tab { flex: 1; padding: 12px; text-align: center; cursor: pointer; font-weight: bold; color: #aaa; transition: 0.3s; }
         .tab.active { color: var(--amarillo); border-bottom: 2px solid var(--amarillo); }
 
-        input { width: 100%; padding: 12px; margin: 8px 0; border: 1px solid #ddd; border-radius: 8px; box-sizing: border-box; outline: none; }
-        button { width: 100%; padding: 14px; background: var(--amarillo); border: none; border-radius: 8px; font-weight: bold; cursor: pointer; margin-top: 15px; }
+        /* Formulario */
+        .input-group { margin-bottom: 15px; }
+        input { width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 8px; box-sizing: border-box; outline: none; font-size: 15px; }
+        input:focus { border-color: var(--amarillo); }
+        
+        button { width: 100%; padding: 14px; background: var(--amarillo); border: none; border-radius: 8px; font-weight: bold; cursor: pointer; font-size: 16px; transition: 0.2s; }
+        button:hover { background: #d4a705; }
         button:disabled { background: #ccc; cursor: not-allowed; }
         
-        /* Requisitos visuales */
-        .req-container { margin: 10px 0; display: none; } /* Oculto por defecto */
-        .req { font-size: 12px; color: #999; display: flex; align-items: center; margin: 3px 0; }
+        /* Requisitos Contraseña */
+        .req-box { margin: 10px 0; display: none; }
+        .req { font-size: 12px; color: #999; display: flex; align-items: center; margin: 4px 0; }
         .req.valid { color: #28a745; font-weight: bold; }
         .req::before { content: "○"; margin-right: 8px; }
         .req.valid::before { content: "●"; }
         
-        .loader { display: none; text-align: center; color: var(--amarillo); margin-top: 10px; }
+        .loader { display: none; text-align: center; color: var(--amarillo); margin-top: 15px; font-weight: bold; }
     </style>
 </head>
 <body>
@@ -42,101 +45,110 @@
         <div id="tab-signup" class="tab" onclick="cambiarModo('signup')">Registrarse</div>
     </div>
 
-    <div id="form-body">
-        <input type="text" id="username" placeholder="Nombre completo" style="display:none">
-        <input type="email" id="email" placeholder="Email corporativo">
-        <input type="password" id="password" placeholder="Contraseña" oninput="validar()">
+    <div id="form-content">
+        <div id="field-user" class="input-group" style="display:none">
+            <input type="text" id="username" placeholder="Nombre completo">
+        </div>
+
+        <div class="input-group">
+            <input type="email" id="email" placeholder="Email corporativo">
+        </div>
+
+        <div class="input-group">
+            <input type="password" id="password" placeholder="Contraseña" oninput="validar()">
+        </div>
         
-        <div id="req-box" class="req-container">
+        <div id="pass-reqs" class="req-box">
             <div id="r-len" class="req">8+ caracteres</div>
             <div id="r-num" class="req">Un número</div>
             <div id="r-cap" class="req">Una mayúscula</div>
         </div>
 
-        <button id="btn-main" onclick="enviar()">Entrar</button>
-        <div id="loading" class="loader">Conectando con el servidor...</div>
+        <button id="btn-main" onclick="enviarDatos()">Entrar</button>
+        <div id="loading" class="loader">Procesando...</div>
     </div>
 </div>
 
 <script>
-    // --- COLOCA TU URL AQUÍ ---
+    // ==========================================
+    // CONFIGURACIÓN: PEGA TU URL DE APPS SCRIPT
     const API_URL = "https://script.google.com/macros/s/AKfycbxGK9fXOhcxQAaMVHGLMFsEQNLbyyHEVZWVcDbLvET3BUeDE9DhQiZ4NTtBREdt0-ho/exec"; 
+    // ==========================================
 
-    let modoActual = 'login';
+    let modo = 'login';
 
-    function cambiarModo(nuevoModo) {
-        modoActual = nuevoModo;
+    function cambiarModo(m) {
+        modo = m;
+        document.getElementById('tab-login').classList.toggle('active', modo === 'login');
+        document.getElementById('tab-signup').classList.toggle('active', modo === 'signup');
         
-        // Actualizar UI de pestañas
-        document.getElementById('tab-login').classList.toggle('active', modoActual === 'login');
-        document.getElementById('tab-signup').classList.toggle('active', modoActual === 'signup');
-
-        // Mostrar/Ocultar campos según el modo
-        const displaySignup = modoActual === 'signup' ? 'block' : 'none';
-        document.getElementById('username').style.display = displaySignup;
-        document.getElementById('req-box').style.display = displaySignup;
+        const isSignup = modo === 'signup';
+        document.getElementById('field-user').style.display = isSignup ? 'block' : 'none';
+        document.getElementById('pass-reqs').style.display = isSignup ? 'block' : 'none';
+        document.getElementById('btn-main').innerText = isSignup ? 'Crear Cuenta' : 'Entrar';
         
-        // Cambiar texto del botón
-        document.getElementById('btn-main').innerText = modoActual === 'login' ? 'Entrar' : 'Crear Cuenta';
-        
-        validar(); // Ejecutar validación inicial
+        validar();
     }
 
     function validar() {
-        if (modoActual === 'login') {
+        if (modo === 'login') {
             document.getElementById('btn-main').disabled = false;
             return;
         }
-
         const p = document.getElementById('password').value;
-        const c1 = p.length >= 8;
-        const c2 = /[0-9]/.test(p);
-        const c3 = /[A-Z]/.test(p);
-
+        const c1 = p.length >= 8, c2 = /[0-9]/.test(p), c3 = /[A-Z]/.test(p);
+        
         document.getElementById('r-len').className = c1 ? 'req valid' : 'req';
         document.getElementById('r-num').className = c2 ? 'req valid' : 'req';
         document.getElementById('r-cap').className = c3 ? 'req valid' : 'req';
-
+        
         document.getElementById('btn-main').disabled = !(c1 && c2 && c3);
     }
 
-    async function enviar() {
+    async function enviarDatos() {
         const email = document.getElementById('email').value;
         const pass = document.getElementById('password').value;
         const user = document.getElementById('username').value;
 
-        if (!email || !pass || (modoActual === 'signup' && !user)) {
-            alert("Completa todos los campos");
+        if (!email || !pass || (modo === 'signup' && !user)) {
+            alert("Rellena todos los campos");
             return;
         }
 
         document.getElementById('btn-main').style.display = 'none';
         document.getElementById('loading').style.display = 'block';
 
+        const payload = {
+            action: modo,
+            email: email,
+            password: pass,
+            username: user || "Usuario"
+        };
+
         try {
+            // Envío a Google Sheets
             await fetch(API_URL, {
                 method: 'POST',
                 mode: 'no-cors',
-                body: JSON.stringify({
-                    action: modoActual,
-                    email: email,
-                    password: pass,
-                    username: user
-                })
+                body: JSON.stringify(payload)
             });
 
-            document.getElementById('loading').style.display = 'none';
-            document.getElementById('btn-main').style.display = 'block';
+            // Simulamos un tiempo de respuesta para mejor UX
+            setTimeout(() => {
+                if (modo === 'signup') {
+                    alert("✓ Registro enviado. Revisa tu email para verificar la cuenta.");
+                    location.reload();
+                } else {
+                    // LOGIN: Redirigir al Dashboard pasando el nombre en la URL
+                    const nombreParaURL = encodeURIComponent(user || email.split('@')[0]);
+                    window.location.href = "dashboard.html?user=" + nombreParaURL;
+                }
+            }, 1000);
 
-            if (modoActual === 'signup') {
-                alert("✓ Solicitud enviada. Revisa tu email para activar la cuenta.");
-            } else {
-                alert("✓ Intento de acceso registrado.");
-            }
         } catch (e) {
-            alert("Error de conexión");
-            document.getElementById('loading').style.display = 'none';
+            alert("Error al conectar con el servidor");
             document.getElementById('btn-main').style.display = 'block';
+            document.getElementById('loading').style.display = 'none';
         }
     }
 </script>
